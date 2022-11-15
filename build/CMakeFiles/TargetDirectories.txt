@@ -1,0 +1,3 @@
+/opt/Threshold-MSER/build/CMakeFiles/segment.dir
+/opt/Threshold-MSER/build/CMakeFiles/edit_cache.dir
+/opt/Threshold-MSER/build/CMakeFiles/rebuild_cache.dir
