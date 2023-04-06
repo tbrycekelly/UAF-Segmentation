@@ -93,6 +93,8 @@ int main(int argc, char **argv) {
     options.left = 0;
     options.right = 0;
 
+    std::cout << "Segmentation Version 2023.04.04" << std::endl;
+
     // TODO: more robust options with std::find may be worth it
     if (argc == 1) {
         helpMsg(argv[0], options);
@@ -127,6 +129,7 @@ int main(int argc, char **argv) {
             options.outputDirectory = argv[i + 1];
             try {
                 fs::create_directories(options.outputDirectory);
+                fs::permissions(options.outputDirectory, fs::perms::all);
             }
             catch(fs::filesystem_error const& ex){
                 std::cerr << ex.what() <<  std::endl;
@@ -270,10 +273,13 @@ int main(int argc, char **argv) {
 
     // create output directories
     fs::create_directory(options.outputDirectory);
+    fs::permissions(options.outputDirectory, fs::perms::all);
 	std::string measureDir = options.outputDirectory + "/measurements";
     fs::create_directory(measureDir);
+    fs::permissions(measureDir, fs::perms::all);
 	std::string segmentDir = options.outputDirectory + "/segmentation";
     fs::create_directory(segmentDir);
+    fs::permissions(segmentDir, fs::perms::all);
 
     // Create vector of video files from the input which can either be a directory
     // or a single avi file.
@@ -346,6 +352,7 @@ int main(int argc, char **argv) {
 				std::string imgName = fileName + "_" + convertInt(image_stack_counter, 4);
                 std::string imgDir = segmentDir + "/" + fileName;
                 fs::create_directories(imgDir);
+                fs::permissions(imgDir, fs::perms::all);
 
                 int fill = fillSides(imgGray, options.left, options.right);
                 if (fill != 0) {
@@ -380,6 +387,7 @@ int main(int argc, char **argv) {
             std::string imgName = fileName;
             std::string imgDir = segmentDir + "/" + imgName;
             fs::create_directories(imgDir);
+            fs::permissions(imgDir, fs::perms::all);
 
             int fill = fillSides(imgGray, options.left, options.right);
             if (fill != 0) {
