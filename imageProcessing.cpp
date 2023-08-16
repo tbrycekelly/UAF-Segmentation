@@ -489,9 +489,7 @@ void mser(const cv::Mat& img, std::vector<cv::Rect>& bboxes, int minArea, int ma
 
 void preprocess(const cv::Mat& src, cv::Mat& dst, float erosion_size) {
     // Perform image pre processing
-    cv::Mat erodeElement = getStructuringElement( cv::MORPH_ERODE,
-    cv::Size(2*erosion_size+1, 2*erosion_size+1),
-    cv::Point(erosion_size, erosion_size));
+    cv::Mat erodeElement = getStructuringElement(cv::MORPH_ERODE, cv::Size(2*erosion_size+1, 2*erosion_size+1),cv::Point(erosion_size, erosion_size));
 
     cv::morphologyEx(src, dst, cv::MORPH_OPEN, erodeElement); // open is a combination of erosion and dialation
 }
