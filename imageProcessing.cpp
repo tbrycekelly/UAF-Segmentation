@@ -237,7 +237,7 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
         contourBbox(imgCorrect, bboxes, 90, options.minArea, options.maxArea, options.epsilon);
     }
 
-    auto stop = std::chrono::high_resolution_clock::now();
+    stop = std::chrono::high_resolution_clock::now();
     auto duration_mser = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
     //Write details about the segmentation for this file.
