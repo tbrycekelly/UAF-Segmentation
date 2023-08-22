@@ -142,7 +142,7 @@ void drawHistogram(cv::Mat& hist) {
     cv::imshow("calcHist", histImage);
 }
 
-void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>& bboxes, Options options) {
+void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>& bboxes, std::string imgDir, std::string imgName, std::ofstream& framePtr, Options options) {
     #if defined(WITH_VISUAL)
     cv::imshow("viewer", img); // display unmodified image
     cv::waitKey(0);
@@ -169,6 +169,13 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
     #if defined(WITH_VISUAL)
     std::cout << "Image SNR: " << imgSNR << std::endl;
     #endif
+
+    #pragma omp critical(write)
+    {
+        framePtr << imgName << ", " << imgSNR << std:endl;
+    }
+
+
     if (imgSNR > options.signalToNoise) {
         cv::Mat imgPreprocess;
         preprocess(imgCorrect, imgPreprocess, 1);

@@ -319,6 +319,11 @@ int main(int argc, char **argv) {
         std::ofstream measurePtr(measureFile);
         measurePtr << "image,area,major,minor,perimeter,x,y,mean,height" << std::endl;
 
+        // Create a measurement file to save crop info to
+        std::string frameFile = measureDir + "/" + fileName + ".meta.csv";
+        std::ofstream framePtr(frameFile);
+        framePtr << "Frame metadata file." << std::endl;
+
         // TODO: Add a way to check if file is valid
         // FIXME: cap.read() and cap.grad() are not working properly, aren't throwing errors when reading image
         // This is a temporary solution to determine if the input file is an image or video
@@ -361,7 +366,7 @@ int main(int argc, char **argv) {
 
                 cv::Mat imgCorrect;
                 std::vector<cv::Rect> bboxes;
-                segmentImage(imgGray, imgCorrect, bboxes, options);
+                segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
                 saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
 
                 elementCount += bboxes.size();
@@ -397,7 +402,7 @@ int main(int argc, char **argv) {
             // Segment the grayscale image and save its' crops.
             cv::Mat imgCorrect;
             std::vector<cv::Rect> bboxes;
-            segmentImage(imgGray, imgCorrect, bboxes, options);
+            segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
             saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
 
             std::cout << "Found " << bboxes.size() << " elements in " << imgName << std::endl; // TBK
