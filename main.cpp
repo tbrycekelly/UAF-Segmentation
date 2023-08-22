@@ -48,7 +48,6 @@
 #endif
 
 namespace fs = std::filesystem;
-using namespace std::chrono;
 
 void helpMsg(std::string executable, Options options) {
     std::cout << "Usage: " << executable << " -i <input> [OPTIONS]\n"
