@@ -172,7 +172,7 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
 
     #pragma omp critical(write)
     {
-        framePtr << imgName << ", " << imgSNR << std:endl;
+        framePtr << imgName << ", " << imgSNR << std::endl;
     }
 
 
