@@ -252,8 +252,8 @@ void getFrame(cv::VideoCapture cap, cv::Mat& img, int n);
  * configurations.
  *
  */
-void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, 
-        std::vector<cv::Rect>& bboxes, Options options);
+void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>& bboxes,
+ std::string imgDir, std::string imgName, std::ofstream& framePtr, Options options);
 
 /**
  * Saves the segments produced by the segment image function.
