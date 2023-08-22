@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DWITH_OPENMP
 
-CXX_INCLUDES = -I/opt/Threshold-MSER/build -isystem /usr/include/opencv4
+CXX_INCLUDES = -I/opt/Threshold-MSER/build -isystem /usr/include/opencv4 -Llibloguru
 
 CXX_FLAGS =  -fopenmp
 
