@@ -150,13 +150,9 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
     auto start = std::chrono::steady_clock::now(); // Start timer
     #endif
 
-    auto start = std::chrono::high_resolution_clock::now();
-
     // Flatfield the image to remove the vertical lines
     flatField(img, imgCorrect, options.outlierPercent);
 
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration_flatfield = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
     #if defined(WITH_VISUAL)
     cv::imshow("viewer", imgCorrect);
@@ -175,7 +171,6 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
     std::cout << "Image SNR: " << imgSNR << std::endl;
     #endif
 
-    start = std::chrono::high_resolution_clock::now();
 
     if (imgSNR > options.signalToNoise) {
         cv::Mat imgPreprocess;
@@ -237,13 +232,10 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
         contourBbox(imgCorrect, bboxes, 90, options.minArea, options.maxArea, options.epsilon);
     }
 
-    stop = std::chrono::high_resolution_clock::now();
-    auto duration_mser = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-
     //Write details about the segmentation for this file.
     #pragma omp critical(write)
     {
-        framePtr << imgName << ", " << imgSNR << ", " << duration_flatfield.count() << ", " << duration_mser.count << std::endl;
+        framePtr << imgName << ", " << imgSNR << ", " << std::chrono::high_resolution_clock::now() << std::endl;
     }
 }
 
