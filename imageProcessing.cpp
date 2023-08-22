@@ -156,7 +156,7 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
     flatField(img, imgCorrect, options.outlierPercent);
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration_flatfield = duration_cast<std::chrono::microseconds>(stop - start);
+    auto duration_flatfield = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
     #if defined(WITH_VISUAL)
     cv::imshow("viewer", imgCorrect);
@@ -238,7 +238,7 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
     }
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration_mser = duration_cast<std::chrono::microseconds>(stop - start);
+    auto duration_mser = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
     //Write details about the segmentation for this file.
     #pragma omp critical(write)
