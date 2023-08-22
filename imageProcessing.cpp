@@ -235,7 +235,7 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
     //Write details about the segmentation for this file.
     #pragma omp critical(write)
     {
-        framePtr << imgName << ", " << imgSNR << ", " << std::chrono::high_resolution_clock::now() << std::endl;
+        framePtr << imgName << ", " << imgSNR << std::endl;
     }
 }
 
