@@ -44,6 +44,7 @@
 #include <opencv2/highgui.hpp>
 
 #include <loguru.hpp> // logging
+#include <loguru.cpp>
 #include <chrono> // timer
 
 namespace fs = std::filesystem;
