@@ -238,7 +238,7 @@ void contourBbox(const cv::Mat& img, std::vector<cv::Rect>& bboxes,
  * @param n The number of frames to grab from the capture device.
  * @param frameCounter REMOVE
  */
-void getFrame(cv::VideoCapture cap, cv::Mat& img, int n);
+void getFrame(cv::VideoCapture cap, cv::Mat& img);
 
 /**
  * Segment the image by performing fielding and preprocessing the image, then
