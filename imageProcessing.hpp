@@ -75,7 +75,6 @@ struct Options
 {
     std::string input;
     std::string outputDirectory;
-    int numConcatenate;
     int signalToNoise;
     int minArea;
     int maxArea;
@@ -228,7 +227,7 @@ void mser(const cv::Mat& img, std::vector<cv::Rect>& bboxes, int minArea=50,
         int maxArea=400000, int delta=5, int max_variation=5, float eps=.3);
 
 void contourBbox(const cv::Mat& img, std::vector<cv::Rect>& bboxes, 
-        int threshold, int minArea, int maxArea, float eps);
+        int threshold, int minArea, int maxArea);
 
 /**
  * Gets the next n frames from the video capture device capture device. Stores

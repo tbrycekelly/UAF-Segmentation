@@ -54,7 +54,6 @@ void helpMsg(std::string executable, Options options) {
         << std::left << std::setw(30) << "Segment a directory of images by utilizing the MSER method.\n\n"
         << std::left << std::setw(30) << "  -i, --input" << "Directory of video files to segment\n"
         << std::left << std::setw(30) << "  -o, --output-directory" << "Output directory where segmented images should be stored (Default: " << options.outputDirectory << ")\n"
-        << std::left << std::setw(30) << "  -n, --num-concatenate" << "The number of frames that will be vertically concatenated (Default: " << options.numConcatenate <<  ")\n"
         << std::left << std::setw(30) << "  -s, --signal-to-noise" << "The cutoff signal to noise ratio that is used in determining which frames from\n"
         << std::left << std::setw(30) << "" << "the video file get segmented. Note: This will change as we change the outlier percent (Default: " << options.signalToNoise << ")\n"
         << std::left << std::setw(30) << "  -p, --outlier-percent" << "Percentage of darkest and lightest pixels to throw out before flat-fielding (Default: " << options.outlierPercent << ")\n"
@@ -82,7 +81,6 @@ int main(int argc, char **argv) {
     options.outputDirectory = "out";
     options.signalToNoise = 60;
     options.outlierPercent = .15;
-    options.numConcatenate = 1;
     options.minArea = 50;
     options.maxArea = 400000;
     options.epsilon = 1;
@@ -143,14 +141,6 @@ int main(int argc, char **argv) {
                 return 1;
             }
             options.signalToNoise = std::stoi(argv[i+1]);
-            i+=2;
-		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--num-concatenate") == 0) {
-            // Validate the input type
-            if ( !isInt(argv[i+1]) ) {
-                std::cerr << argv[i+1] << " is not a valid input. The number of frames to concatenate must be an integer." << std::endl;
-                return 1;
-            }
-            options.numConcatenate = std::stoi(argv[i+1]);
             i+=2;
 		} else if (strcmp(argv[i], "-M") == 0 || strcmp(argv[i], "--maxArea") == 0) {
             // Validate the input type
@@ -262,7 +252,6 @@ int main(int argc, char **argv) {
     std::cout << "Output Directory: " << options.outputDirectory << std::endl;
     std::cout << "SNR: " << options.signalToNoise << std::endl;
     std::cout << "Outlier Percentage: " << options.outlierPercent << std::endl;
-    std::cout << "Number to Concatenate: " << options.numConcatenate << std::endl;
     std::cout << "Min Area: " << options.minArea << std::endl;
     std::cout << "Max Area: " << options.maxArea << std::endl;
     std::cout << "Epsilon: " << options.epsilon << std::endl;
@@ -342,9 +331,8 @@ int main(int argc, char **argv) {
 	        cv::Mat imgGray;
             #pragma omp critical(getImage)
             {
-                getFrame(cap, imgGray, options.numConcatenate);
-                image_stack_counter += options.numConcatenate;
-                j += options.numConcatenate - 1;
+                getFrame(cap, imgGray);
+                image_stack_counter += 1;
             }
 
             
