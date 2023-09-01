@@ -328,6 +328,8 @@ int main(int argc, char **argv) {
 
         #pragma omp parallel for
         for (int j=0; j<totalFrames-1; j++) {
+
+            std::cout << std::chrono::system_clock::now() << " Starting frame " << j+1 << " processing." << std::endl;
 	        cv::Mat imgGray;
             #pragma omp critical(getImage)
             {
@@ -349,13 +351,19 @@ int main(int argc, char **argv) {
             cv::Mat imgCorrect;
             std::vector<cv::Rect> bboxes;
             segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
+
+            std::cout << std::chrono::system_clock::now() << " Finished segmentation, starting to save crops." << std::endl;
+
             saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
+
+            std::cout << std::chrono::system_clock::now() << " Done with frame." << std::endl;
 
             elementCount += bboxes.size();
 
             imgGray.release();
             imgCorrect.release();
 	    }
+
 	    // When video is done being processed release the capture object
 	    cap.release();
         std::cout << "Done with file. Found " << elementCount << " ROIs." << std::endl; // TBK

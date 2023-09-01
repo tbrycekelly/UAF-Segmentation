@@ -259,9 +259,9 @@ void saveCrops(const cv::Mat &img, const cv::Mat &imgCorrect, std::vector<cv::Re
     // Write full video frames to files
     if (options.fullOutput)
     {
-        std::string correctedFrame = frameDir + "/" + imgName + "_corrected.tif";
-        std::string originalFrame = frameDir + "/" + imgName + "_original.tif";
-        std::string bboxFrame = frameDir + "/" + imgName + "_bboxes.tif";
+        std::string correctedFrame = frameDir + "/" + imgName + "_corrected.png";
+        std::string originalFrame = frameDir + "/" + imgName + "_original.png";
+        std::string bboxFrame = frameDir + "/" + imgName + "_bboxes.png";
 
         cv::imwrite(correctedFrame, imgCorrect);
         cv::imwrite(originalFrame, img);
