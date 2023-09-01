@@ -117,25 +117,6 @@ std::string convertInt(int number, int fill=4);
 cv::Rect rescaleRect(const cv::Rect& rect, float scale=.5);
 
 /**
- * Any pixel values above thresh is set to 255 (white).
- *
- * \begin{equation}
- * dst =
- * \begin{cases}
- *   255 & \text{if } x < thresh \\
- *   src & \text{if } x > thresh
- * \end{cases}
- * \end{equation}
- *
- * @param src Input image.
- * @param dst Output image.
- * @param thresh Threshold to determine which pixels should be turned white
- *
- * @return A new cv::Rect that has the rescaled sides.
- */
-void chopThreshold(const cv::Mat& src, cv::Mat& dst, int thresh);
-
-/**
  * Calculate the signal to noise ratio (SNR) for an image.
  *
  * \begin{equation}
