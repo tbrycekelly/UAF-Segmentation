@@ -97,80 +97,16 @@ void getFrame(cv::VideoCapture cap, cv::Mat& img, int n) {
     frame.release();
 }
 
-void chopThreshold(const cv::Mat& src, cv::Mat& dst, int thresh){
-    cv::Mat imgOtsu;
-    cv::threshold(src, imgOtsu, thresh, 255, cv::THRESH_TOZERO_INV);
 
-    cv::Mat mask;
-    cv::compare(src, imgOtsu, mask, cv::CMP_EQ);
-    cv::Mat imgThresh(src.size(), CV_8UC1, cv::Scalar(255));
-    src.copyTo(dst, mask);
-}
 
-void getHist(const cv::Mat& img, cv::Mat& hist) {
-    int histSize = 256;
-    float range[] = {0, 256};
-    const float *histRange = {range};
-
-    bool uniform = true;
-    bool accumulate = false;
-
-    cv::calcHist(&img, 1, 0, cv::Mat(), hist, 1, &histSize,
-                 &histRange, uniform, accumulate);
-}
-
-void drawHistogram(cv::Mat& hist) {
-    int histSize = 256;
-    int hist_w = 512;
-    int hist_h = 400;
-    int bin_w = cvRound((double)hist_w / histSize);
-
-    cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
-
-    cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1,
-                  cv::Mat());
-
-    for( int i = 1; i < histSize; i++ ) {
-        cv::line(
-            histImage,
-            cv::Point(bin_w * (i-1), hist_h - cvRound(hist.at<float>(i-1))),
-            cv::Point(bin_w * (i), hist_h - cvRound(hist.at<float>(i))),
-            cv::Scalar(255, 0, 0), 2, 8, 0);
-    }
-
-    cv::namedWindow("calcHist", cv::WINDOW_AUTOSIZE);
-    cv::imshow("calcHist", histImage);
-}
 
 void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>& bboxes, std::string imgDir, std::string imgName, std::ofstream& framePtr, Options options) {
-    #if defined(WITH_VISUAL)
-    cv::imshow("viewer", img); // display unmodified image
-    cv::waitKey(0);
-
-    auto start = std::chrono::steady_clock::now(); // Start timer
-    #endif
 
     // Flatfield the image to remove the vertical lines
     flatField(img, imgCorrect, options.outlierPercent);
 
-
-    #if defined(WITH_VISUAL)
-    cv::imshow("viewer", imgCorrect);
-    cv::waitKey(0);
-    #endif
-
-    #if defined(WITH_VISUAL)
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end-start;
-    std::cout << "Flatfield time: " << elapsed_seconds.count() << "s\n";
-    #endif
-
     // If the SNR is less than options.signalToNoise then the image will have many false segments
     float imgSNR = SNR(imgCorrect);
-    #if defined(WITH_VISUAL)
-    std::cout << "Image SNR: " << imgSNR << std::endl;
-    #endif
-
 
     if (imgSNR > options.signalToNoise) {
         cv::Mat imgPreprocess;
@@ -221,12 +157,6 @@ void segmentImage(const cv::Mat& img, cv::Mat& imgCorrect, std::vector<cv::Rect>
         }
 
         imgCorrect.copyTo(imgCorrectMask, mask);
-
-        #if defined(WITH_VISUAL)
-        cv::imshow("viewer", imgCorrectMask);
-        cv::waitKey(0);
-        #endif
-
         mser(imgCorrectMask, bboxes, options.minArea, options.maxArea, options.delta, options.variation, options.epsilon);
     } else {
         contourBbox(imgCorrect, bboxes, 90, options.minArea, options.maxArea, options.epsilon);
@@ -251,28 +181,14 @@ void contourBbox(const cv::Mat& img, std::vector<cv::Rect>& bboxes, int threshol
     cv::findContours(imgThresh, contours, hierarchy, cv::RETR_LIST, cv::CHAIN_APPROX_TC89_L1);
 
     // create mask based on darkest regions
-    #if defined(WITH_VISUAL)
-	cv::Mat imgContours;
-	cv::cvtColor(img, imgContours, cv::COLOR_GRAY2RGB);
-    #endif
-
     for(int i=0; i<contours.size(); i++){
         cv::Rect bbox = cv::boundingRect(contours[i]);
         if (bbox.area() < minArea || bbox.area() > maxArea)
              continue;
 
         bboxes.push_back(bbox);
-
-        #if defined(WITH_VISUAL)
-	    cv::rectangle(imgContours, bbox, cv::Scalar(0, 0, 255));
-        #endif
     }
-    // groupRect(bboxes, 1, 2);
 
-    #if defined(WITH_VISUAL)
-    cv::imshow("viewer", imgContours);
-    cv::waitKey(0);
-    #endif
 }
 
 
@@ -351,12 +267,6 @@ void saveCrops(const cv::Mat& img, const cv::Mat& imgCorrect, std::vector<cv::Re
              << perimeter << "," << x << "," << y << "," << mean << "," << height << std::endl;
         }
     }
-
-    #if defined(WITH_VISUAL)
-    std::cout << "Bounding Boxes found: " << numBboxes << std::endl;
-    cv::imshow("viewer", imgBboxes);
-    cv::waitKey(0);
-    #endif
 
 	// Write full video frames to files
     if (options.fullOutput) {
@@ -470,30 +380,9 @@ void mser(const cv::Mat& img, std::vector<cv::Rect>& bboxes, int minArea, int ma
 	std::vector<std::vector<cv::Point>> msers;
 	detector->detectRegions(img, msers, bboxes);
 
-    #if defined(WITH_VISUAL)
-    // Create an image with all of the bboxes on it from MSER
-	cv::Mat imgBboxes;
-	cv::cvtColor(img, imgBboxes, cv::COLOR_GRAY2RGB);
-	for(int i=0;i<bboxes.size();i++){
-	    cv::rectangle(imgBboxes, bboxes[i], cv::Scalar(0, 0, 255));
-	}
-    cv::imshow("viewer", imgBboxes);
-    cv::waitKey(0);
-    #endif
-
-    #if defined(WITH_VISUAL)
-    auto start = std::chrono::steady_clock::now();
-    #endif
-
     // merge the bounding boxes produced by MSER
     int minBboxes = 2;
     groupRect(bboxes, minBboxes, eps);
-
-    #if defined(WITH_VISUAL)
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end-start;
-    std::cout << "Group Rect time: " << elapsed_seconds.count() << "s\n";
-    #endif
 }
 
 void preprocess(const cv::Mat& src, cv::Mat& dst, float erosion_size) {

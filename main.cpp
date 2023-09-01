@@ -271,18 +271,19 @@ int main(int argc, char **argv) {
 	std::cout << "Threshold: " << options.threshold << std::endl;
 	std::cout << "Full Output: " << options.fullOutput << std::endl;
 
+
     // create output directories
     fs::create_directory(options.outputDirectory);
     fs::permissions(options.outputDirectory, fs::perms::all);
+
 	std::string measureDir = options.outputDirectory + "/measurements";
     fs::create_directory(measureDir);
     fs::permissions(measureDir, fs::perms::all);
+
 	std::string segmentDir = options.outputDirectory + "/segmentation";
     fs::create_directory(segmentDir);
     fs::permissions(segmentDir, fs::perms::all);
 
-    // Create vector of video files from the input which can either be a directory
-    // or a single avi file.
     std::vector<fs::path> files;
     if (fs::is_directory(options.input)) {
         for(auto& p: fs::directory_iterator{options.input}) {
@@ -290,7 +291,7 @@ int main(int argc, char **argv) {
 
             std::string ext = file.extension();
 
-            std::string valid_ext[] = {".avi", ".mp4", ".png"};
+            std::string valid_ext[] = {".avi", ".mp4"};
             int len = sizeof(valid_ext)/sizeof(valid_ext[0]);
             if (!containExt(ext, valid_ext, len)) {
                 continue;
@@ -307,6 +308,7 @@ int main(int argc, char **argv) {
         std::cerr << "No files to segment were found." << std::endl;
         return 1;
     }
+
     std::cout << "Found " << numFiles << " files." << std::endl;
 
     for (int i=0; i<numFiles; i++) {
@@ -319,99 +321,56 @@ int main(int argc, char **argv) {
         std::ofstream measurePtr(measureFile);
         measurePtr << "image,area,major,minor,perimeter,x,y,mean,height" << std::endl;
 
-        // Create a measurement file to save crop info to
+        // Create a metadata file to save frame info into
         std::string frameFile = measureDir + "/" + fileName + ".meta.csv";
         std::ofstream framePtr(frameFile);
-        framePtr << "Frame metadata file." << std::endl;
+        framePtr << "frame, snr" << std::endl;
 
-        // TODO: Add a way to check if file is valid
-        // FIXME: cap.read() and cap.grad() are not working properly, aren't throwing errors when reading image
-        // This is a temporary solution to determine if the input file is an image or video
-        // cv::Mat testFrame;
-        std::string ext = file.extension();
-        bool validImage = (ext == ".png");
-
-        if (!validImage) { // If the file is a video
-            cv::VideoCapture cap(file.string());
-            if (!cap.isOpened()) {
-                std::cerr << "Invalid file: " << file.string() << std::endl;
-                continue;
-            }
-
-	        int image_stack_counter = 0;
-            int totalFrames = cap.get(cv::CAP_PROP_FRAME_COUNT);
-			std::cout << "Found video file with " << totalFrames << " frames." << std::endl; // TBK
-            int elementCount = 0;
-
-            #pragma omp parallel for
-            for (int j=0; j<totalFrames-1; j++) {
-	        	cv::Mat imgGray;
-                #pragma omp critical(getImage)
-                {
-                    getFrame(cap, imgGray, options.numConcatenate);
-                    image_stack_counter += options.numConcatenate;
-                    j += options.numConcatenate - 1;
-                }
-
-                //std::string imgName = fileName + "_" + convertInt(j+1, 4);
-				std::string imgName = fileName + "_" + convertInt(image_stack_counter, 4);
-                std::string imgDir = segmentDir + "/" + fileName;
-                fs::create_directories(imgDir);
-                fs::permissions(imgDir, fs::perms::all);
-
-                int fill = fillSides(imgGray, options.left, options.right);
-                if (fill != 0) {
-                    exit(1);
-                }
-
-                cv::Mat imgCorrect;
-                std::vector<cv::Rect> bboxes;
-                segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
-                saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
-
-                elementCount += bboxes.size();
-
-                imgGray.release();
-                imgCorrect.release();
-	        }
-	        // When video is done being processed release the capture object
-	        cap.release();
-            std::cout << "Done with file. Found " << elementCount << " ROIs." << std::endl; // TBK
+        cv::VideoCapture cap(file.string());
+        if (!cap.isOpened()) {
+            std::cerr << "Invalid file: " << file.string() << std::endl;
+            continue;
         }
-        else { // If the file is an image
-	    	cv::Mat imgRaw = cv::imread(file.string());
-            cv::Mat imgGray;
-	        cv::cvtColor(imgRaw, imgGray, cv::COLOR_RGB2GRAY);
 
-            if (imgGray.empty()) {
-                std::cerr << "Error reading the image file " << file.string() << std::endl;
-                continue;
+	    int image_stack_counter = 0;
+        int totalFrames = cap.get(cv::CAP_PROP_FRAME_COUNT);
+		std::cout << "Found video file with " << totalFrames << " frames." << std::endl; // TBK
+        int elementCount = 0;
+
+        #pragma omp parallel for
+        for (int j=0; j<totalFrames-1; j++) {
+	        cv::Mat imgGray;
+            #pragma omp critical(getImage)
+            {
+                getFrame(cap, imgGray, options.numConcatenate);
+                image_stack_counter += options.numConcatenate;
+                j += options.numConcatenate - 1;
             }
-            // TODO: Add the ability to concatenate frames like with videos
 
-            std::string imgName = fileName;
-            std::string imgDir = segmentDir + "/" + imgName;
+            
+			std::string imgName = fileName + "_" + convertInt(image_stack_counter, 4);
+            std::string imgDir = segmentDir + "/" + fileName;
             fs::create_directories(imgDir);
             fs::permissions(imgDir, fs::perms::all);
 
             int fill = fillSides(imgGray, options.left, options.right);
             if (fill != 0) {
-                exit( 1 );
+                exit(1);
             }
 
-            // Segment the grayscale image and save its' crops.
             cv::Mat imgCorrect;
             std::vector<cv::Rect> bboxes;
             segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
             saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
 
-            std::cout << "Found " << bboxes.size() << " elements in " << imgName << std::endl; // TBK
+            elementCount += bboxes.size();
 
-            imgRaw.release();
             imgGray.release();
             imgCorrect.release();
-        }
-
+	    }
+	    // When video is done being processed release the capture object
+	    cap.release();
+        std::cout << "Done with file. Found " << elementCount << " ROIs." << std::endl; // TBK
         measurePtr.close();
     }
     auto end = std::chrono::system_clock::now();
