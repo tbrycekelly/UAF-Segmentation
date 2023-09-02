@@ -246,8 +246,6 @@ int main(int argc, char **argv) {
 
 
     auto start = std::chrono::system_clock::now();
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds;
 
     // TBK: Add details to log
     std::cout << "Input Directory: " << options.input << std::endl;
@@ -330,11 +328,7 @@ int main(int argc, char **argv) {
 
         #pragma omp parallel for
         for (int j=0; j<totalFrames-1; j++) {
-            end = std::chrono::system_clock::now();
-            elapsed_seconds = end-start;
-
-            std::cout << elapsed_seconds.count() << " Starting frame " << j+1 << " processing." << std::endl;
-	        cv::Mat imgGray;
+            cv::Mat imgGray;
             #pragma omp critical(getImage)
             {
                 getFrame(cap, imgGray);
@@ -355,18 +349,8 @@ int main(int argc, char **argv) {
             cv::Mat imgCorrect;
             std::vector<cv::Rect> bboxes;
             segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
-
-            end = std::chrono::system_clock::now();
-            elapsed_seconds = end-start;
-            std::cout << elapsed_seconds.count() << " Finished segmentation, starting to save crops." << std::endl;
-
             saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
-
-            end = std::chrono::system_clock::now();
-            elapsed_seconds = end-start;
-            std::cout << elapsed_seconds.count() << " Done with frame." << std::endl;
-
-            elementCount += bboxes.size();
+            elementCount += &bboxes.size();
 
             imgGray.release();
             imgCorrect.release();
@@ -378,7 +362,7 @@ int main(int argc, char **argv) {
         measurePtr.close();
     }
     end = std::chrono::system_clock::now();
-    elapsed_seconds = end-start;
+    std::chrono::duration<double> elapsed_seconds; = end-start;
     std::time_t end_time = std::chrono::system_clock::to_time_t(end);
  
     std::cout << "Finished segmentation at " << std::ctime(&end_time) << std::endl << "Elapsed time: " << elapsed_seconds.count() << "s" << std::endl;
