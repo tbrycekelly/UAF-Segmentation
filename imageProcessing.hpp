@@ -141,7 +141,7 @@ float SNR(const cv::Mat& img);
  * @param percent The top and bottom percent to remove in the calculation of the mean.
  * percent should be a float between 0 and 1.
  */
-void flatField(const cv::Mat& src, cv::Mat& dst, float percent);
+int flatField(const cv::Mat& src, cv::Mat& dst, float percent);
 
 /**
  * Fills the left and right columns of the input img with pixels with value fill.
@@ -172,7 +172,7 @@ int fillSides(cv::Mat& img, int left, int right, int fill=255);
  * percent should be a float between 0 and 1.
  *
  */
-void trimMean(const cv::Mat& img, cv::Mat& tMean, float percent);
+int trimMean(const cv::Mat& img, cv::Mat& tMean, float percent);
 
 void preprocess(const cv::Mat& src, cv::Mat& dst, float erosion_size);
 

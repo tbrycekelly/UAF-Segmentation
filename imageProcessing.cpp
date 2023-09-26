@@ -88,7 +88,7 @@ void getFrame(cv::VideoCapture cap, cv::Mat &img)
 void segmentImage(const cv::Mat &img, cv::Mat &imgCorrect, std::vector<cv::Rect> &bboxes, std::string imgDir, std::string imgName, std::ofstream &framePtr, Options options)
 {
     // Flatfield the image to remove the vertical lines
-    flatField(img, imgCorrect, options.outlierPercent);
+    int effective_width = flatField(img, imgCorrect, options.outlierPercent);
 
     // If the SNR is less than options.signalToNoise then the image will have many false segments
     float imgSNR = SNR(imgCorrect);
@@ -144,7 +144,7 @@ void segmentImage(const cv::Mat &img, cv::Mat &imgCorrect, std::vector<cv::Rect>
 // Write details about the segmentation for this file.
 #pragma omp critical(write)
     {
-        framePtr << imgName << ", " << imgSNR << std::endl;
+        framePtr << imgName << ", " << imgSNR << ", " << effective_width << std::endl;
     }
 }
 
@@ -366,18 +366,20 @@ float SNR(const cv::Mat &img)
     return SNR;
 }
 
-void flatField(const cv::Mat &src, cv::Mat &dst, float percent)
+int flatField(const cv::Mat &src, cv::Mat &dst, float percent)
 {
-    cv::Mat imgBlack = cv::Mat::zeros(src.size(), src.type());
+    //cv::Mat imgBlack = cv::Mat::zeros(src.size(), src.type());
     cv::Mat imgCalib = cv::Mat::zeros(src.size(), src.type());
 
     // Get the calibration image
-    trimMean(src, imgCalib, percent);
+    int width = trimMean(src, imgCalib, percent);
 
     cv::Mat imgCorrect(src.size(), src.type());    // creates mat of the correct size and type
-    cv::addWeighted(src, 1, imgBlack, -1, 0, src); // subtracts an all black array
+    //cv::addWeighted(src, 1, imgBlack, -1, 0, src); // subtracts an all black array
     cv::addWeighted(imgCalib, 1, imgBlack, -1, 0, imgCalib);
     cv::divide(src, imgCalib, dst, 255); // performs the flat fielding by dividing the arrays
+
+    return width;
 }
 
 int fillSides(cv::Mat &img, int left, int right, int fill)
@@ -401,7 +403,7 @@ int fillSides(cv::Mat &img, int left, int right, int fill)
     return 0;
 }
 
-void trimMean(const cv::Mat &img, cv::Mat &tMean, float percent)
+int trimMean(const cv::Mat &img, cv::Mat &tMean, float percent)
 {
     cv::Mat sort;
     cv::sort(img, sort, cv::SORT_EVERY_COLUMN);
@@ -429,6 +431,14 @@ void trimMean(const cv::Mat &img, cv::Mat &tMean, float percent)
     // get the column-wise average of the image.
     cv::Mat average;
     cv::reduce(imgMask, average, 0, cv::REDUCE_AVG);
+
+    int val = 0;
+    for (int i = 0; i < width; i++) {
+        if (average.at<int8_t>(0, i) <= 10)
+        {
+            val += 1;
+        }
+    }
 
     // Create the trimmed mean matrix
     cv::repeat(average, height, 1, tMean);
