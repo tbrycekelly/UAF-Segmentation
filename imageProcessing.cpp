@@ -442,4 +442,6 @@ int trimMean(const cv::Mat &img, cv::Mat &tMean, float percent)
 
     // Create the trimmed mean matrix
     cv::repeat(average, height, 1, tMean);
+
+    return val;
 }
