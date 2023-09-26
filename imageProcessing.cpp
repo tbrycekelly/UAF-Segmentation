@@ -374,9 +374,9 @@ int flatField(const cv::Mat &src, cv::Mat &dst, float percent)
     // Get the calibration image
     int width = trimMean(src, imgCalib, percent);
 
-    cv::Mat imgCorrect(src.size(), src.type());    // creates mat of the correct size and type
+    //cv::Mat imgCorrect(src.size(), src.type());    // creates mat of the correct size and type
     //cv::addWeighted(src, 1, imgBlack, -1, 0, src); // subtracts an all black array
-    cv::addWeighted(imgCalib, 1, imgBlack, -1, 0, imgCalib);
+    //cv::addWeighted(imgCalib, 1, imgBlack, -1, 0, imgCalib);
     cv::divide(src, imgCalib, dst, 255); // performs the flat fielding by dividing the arrays
 
     return width;
