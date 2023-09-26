@@ -350,7 +350,7 @@ int main(int argc, char **argv) {
             std::vector<cv::Rect> bboxes;
             segmentImage(imgGray, imgCorrect, bboxes, imgDir, imgName, framePtr, options);
             saveCrops(imgGray, imgCorrect, bboxes, imgDir, imgName, measurePtr, options);
-            elementCount += &bboxes.size();
+            elementCount += bboxes.size();
 
             imgGray.release();
             imgCorrect.release();
@@ -361,8 +361,8 @@ int main(int argc, char **argv) {
         std::cout << "Done with file. Found " << elementCount << " ROIs." << std::endl; // TBK
         measurePtr.close();
     }
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds; = end-start;
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
     std::time_t end_time = std::chrono::system_clock::to_time_t(end);
  
     std::cout << "Finished segmentation at " << std::ctime(&end_time) << std::endl << "Elapsed time: " << elapsed_seconds.count() << "s" << std::endl;
