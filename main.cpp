@@ -313,7 +313,7 @@ int main(int argc, char **argv) {
         // Create a metadata file to save frame info into
         std::string frameFile = measureDir + "/" + fileName + ".meta.csv";
         std::ofstream framePtr(frameFile);
-        framePtr << "frame, snr" << std::endl;
+        framePtr << "frame, snr, valid_width" << std::endl;
 
         cv::VideoCapture cap(file.string());
         if (!cap.isOpened()) {

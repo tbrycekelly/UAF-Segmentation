@@ -368,17 +368,14 @@ float SNR(const cv::Mat &img)
 
 int flatField(const cv::Mat &src, cv::Mat &dst, float percent)
 {
-    //cv::Mat imgBlack = cv::Mat::zeros(src.size(), src.type());
+    //Flatfielding is performed by calculating a quantile intensity value for each column of pixels,
+    // here given by the percent float, and then dividing the original pixel values by those intensities.
+    // Additionally, this fucntion returns the width of valid pixels in the image (those that are not all
+    // black). This is used to estiamte the actual area of the image.
+     
     cv::Mat imgCalib = cv::Mat::zeros(src.size(), src.type());
-
-    // Get the calibration image
     int width = trimMean(src, imgCalib, percent);
-
-    //cv::Mat imgCorrect(src.size(), src.type());    // creates mat of the correct size and type
-    //cv::addWeighted(src, 1, imgBlack, -1, 0, src); // subtracts an all black array
-    //cv::addWeighted(imgCalib, 1, imgBlack, -1, 0, imgCalib);
     cv::divide(src, imgCalib, dst, 255); // performs the flat fielding by dividing the arrays
-
     return width;
 }
 
@@ -405,6 +402,12 @@ int fillSides(cv::Mat &img, int left, int right, int fill)
 
 int trimMean(const cv::Mat &img, cv::Mat &tMean, float percent)
 {
+    //trimMean takes as input the memory address of two image matricies and a floating point value
+    //that is a quantile of pixel intensity values to use for determining the background value. This
+    //is calculated by sorting each column of pixels by intensity and then returning the round(percent*
+    //height) row value. This function also returns the number of pixels across the resulting background
+    //levels contain that are less than a fixed value. This is used to calculate the effective width of
+    //the image.
     cv::Mat sort;
     cv::sort(img, sort, cv::SORT_EVERY_COLUMN);
     int height = img.rows, width = img.cols;
