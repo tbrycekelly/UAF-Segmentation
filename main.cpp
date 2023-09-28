@@ -327,7 +327,7 @@ int main(int argc, char **argv) {
         int elementCount = 0;
 
         #pragma omp parallel for
-        for (int j=0; j<totalFrames-1; j++) {
+        for (int j=0; j<totalFrames; j++) {
             cv::Mat imgGray;
             #pragma omp critical(getImage)
             {
