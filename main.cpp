@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     options.left = 0;
     options.right = 0;
 
-    std::cout << "Segmentation Version 2023.04.04" << std::endl;
+    std::cout << "Segmentation Version 2023.10.03" << std::endl;
 
     // TODO: more robust options with std::find may be worth it
     if (argc == 1) {
